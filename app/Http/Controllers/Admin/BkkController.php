@@ -4,14 +4,21 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Bkk; // Import Model Bkk
+use App\Models\Bkk; // Pastikan Model Bkk sudah ada
 
 class BkkController extends Controller
 {
+    // Untuk tampilan Pengunjung (Frontend)
     public function index()
     {
+        $bkk = Bkk::all(); 
+        return view('unit-kerja.Bursa-Kerja-Khusus', compact('bkk'));
+    }
+
+    // Untuk tampilan Dashboard (Admin)
+    public function adminIndex()
+    {
         $bkk = Bkk::all();
-        // Ingat struktur folder: admin/unit-kerja/bursa-kerja-khusus.blade.php
-        return view('admin.unit-kerja.bursa-kerja-khusus', compact('bkk'));
+        return view('admin.unit-kerja.Bursa-Kerja-Khusus', compact('bkk'));
     }
 }

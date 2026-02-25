@@ -9,12 +9,13 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
-        Schema::create('siswas', function (Blueprint $table) {
+        Schema::create('sambutans', function (Blueprint $table) {
             $table->id();
-            $table->string('nama');
-            $table->foreignId('jurusan_id')->constrained('jurusans');
+            $table->string('nama_kepsek');
+            $table->string('foto_kepsek')->nullable();
+            $table->text('isi__sambutan');
             $table->timestamps();
         });
     }
@@ -24,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('spmb_settings');
+        Schema::dropIfExists('sambutans');
     }
 };

@@ -1,19 +1,17 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin; // <--- PASTIKAN ADA "\Admin" NYA
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use App\Models\Pendaftaran;
-use App\Models\SpmbSetting;
-use App\Models\Jurusan;
+use Illuminate\Http\Request;
 
 class PendaftaranController extends Controller
 {
     public function index()
     {
-        $jurusans = Jurusan::all();
-        $setting = SpmbSetting::first();
-        return view('spmb.pendaftaran', compact('jurusans', 'setting'));
+        $pendaftar = Pendaftaran::all();
+        return view('admin.kelola-jalur-SPMB', compact('pendaftar'));
     }
 
     public function store(Request $request)
@@ -23,26 +21,60 @@ class PendaftaranController extends Controller
             return back()->with('error', 'Kode CAPTCHA tidak sesuai!')->withInput();
         }
 
+        // 2. Ambil semua input dan bersihkan field non-database
         $data = $request->all();
+        unset($data['captcha_user'], $data['captcha_asli'], $data['_token']);
 
-        // 2. BUANG DATA CAPTCHA (WAJIB biar gak error Unknown Column)
-        unset($data['captcha_user']);
-        unset($data['captcha_asli']);
+        // 3. MAPPING SEMUA FIELD (Agar tidak ada yang NULL)
+        // Kita paksa semua kolom terisi, minimal dengan tanda strip (-) jika kosong di form
 
-        // 3. Proses Upload File
-        $files = ['pas_foto', 'kk', 'akta_lahir', 'kip', 'bukti_bayar'];
-        foreach ($files as $file) {
-            if ($request->hasFile($file)) {
-                $data[$file] = $request->file($file)->store('dokumen-pendaftaran', 'public');
+        $data['nama_lengkap']      = $request->nama_lengkap ?? '-';
+        $data['nisn']              = $request->nisn ?? $request->nik_nisn ?? '0'; // FIX ERROR image_35f570.png
+        $data['nik']               = $request->nik ?? $request->nik_nisn ?? '0';
+        $data['tempat_lahir']      = $request->tempat_lahir ?? '-';
+        $data['tanggal_lahir']     = $request->tanggal_lahir ?? now()->format('Y-m-d');
+        $data['jenis_kelamin']     = $request->jenis_kelamin ?? '-';
+        $data['agama']             = $request->agama ?? 'Islam';
+        $data['alamat']            = $request->alamat ?? '-';
+        $data['no_telp']           = $request->no_telp ?? '-';
+        $data['email']             = $request->email ?? '-';
+        $data['sekolah_asal']      = $request->sekolah_asal ?? '-';
+        $data['program_keahlian']  = $request->program_keahlian ?? '-';
+        $data['jenis_pendaftaran'] = $request->jenis_pendaftaran ?? 'Siswa Baru';
+        $data['jalur_pendaftaran'] = $request->jalur_pendaftaran ?? 'INDEN';
+
+        // Data Orang Tua
+        $data['nama_ortu']         = $request->nama_ortu ?? '-';
+        $data['pekerjaan_ortu']    = $request->pekerjaan_ortu ?? '-';
+        $data['no_telp_ortu']      = $request->no_telp_ortu ?? '-';
+        $data['alamat_ortu']       = $request->alamat_ortu ?? '-';
+
+        // 4. PROSES UPLOAD FILE
+        $fileFields = [
+            'pas_foto'    => 'pas_foto',
+            'kk'          => 'kk',
+            'akta_lahir'  => $request->hasFile('akte') ? 'akte' : 'akta_lahir',
+            'kip'         => 'kip',
+        ];
+
+        foreach ($fileFields as $dbCol => $formName) {
+            if ($request->hasFile($formName)) {
+                $data[$dbCol] = $request->file($formName)->store('dokumen-pendaftaran', 'public');
+            } else {
+                // Beri nilai string kosong atau default agar tidak error jika database NOT NULL
+                $data[$dbCol] = '-';
             }
         }
 
-        // 4. Simpan ke Database
-        Pendaftaran::create($data);
-
-        return back()->with('success', 'Pendaftaran berhasil dikirim!');
+        // 5. EKSEKUSI SIMPAN
+        try {
+            Pendaftaran::create($data);
+            return back()->with('success', 'Pendaftaran Berhasil Dikirim!');
+        } catch (\Exception $e) {
+            // Jika masih error, pesan ini akan memberitahu field mana yang kurang
+            return back()->with('error', 'Gagal menyimpan: ' . $e->getMessage())->withInput();
+        }
     }
-
     public function adminIndex()
     {
         $pesans = Pendaftaran::latest()->get();

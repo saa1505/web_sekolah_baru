@@ -10,10 +10,8 @@ class ProfilController extends Controller
 {
     public function index()
     {
-        $profil = ProfilSekolah::all();
-
-        return view('admin.profil-sekolah.profil-sekolah', compact('profil'));
-        // sesuaikan dengan lokasi blade kamu
+        $profil = ProfilSekolah::all(); // Mengambil semua data (hasilnya adalah Collection/Array)
+        return view('profil-kami.profil-sekolah', compact('profil'));
     }
 
     public function destroy($id)

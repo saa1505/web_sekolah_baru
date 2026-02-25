@@ -14,8 +14,8 @@ Route::get('/', function () {
 })->name('beranda');
 
 Route::get('/sambutan', function () {
-    return view('sambutan'); 
-    })->name('sambutan');
+    return view('sambutan');
+})->name('sambutan');
 
 Route::get('/agenda', function () {
     return view('agenda');
@@ -77,7 +77,7 @@ Route::get('/profil-kami/sejarah-singkat', function () {
 })->name('sejarah-singkat');
 
 Route::get('/unit-kerja/wakasek-kurikulum', function () {
-    return view('unit-kerja.wakasek-kurikulum'); 
+    return view('unit-kerja.wakasek-kurikulum');
 })->name('wakasek-kurikulum');
 
 Route::get('/unit-kerja/wakasek-kesiswaan', function () {
@@ -123,7 +123,7 @@ Route::get('/detail-informasi/{slug}', [BeritaController::class, 'show'])->name(
 
 // Ganti baris HomeController kamu dengan ini
 Route::get('/profil-sekolah', function () {
-    return view('profil-kami.profil-sekolah'); 
+    return view('profil-kami.profil-sekolah');
 });
 
 Route::get('/profil-sekolah', function () {
@@ -165,10 +165,8 @@ use App\Http\Controllers\Admin\TeachingFactoryController;
 
 Route::resource('admin/unit-kerja/wakasek-kesiswaan', KesiswaanController::class);
 Route::resource('admin/unit-kerja/wakasek-kurikulum', KurikulumController::class);
-Route::resource('admin/unit-kerja/wakasek-humas', HumasController::class);
 Route::resource('admin/unit-kerja/wakasek-sarpras', SarprasController::class);
 Route::resource('admin/unit-kerja/wakasek-ismuba', IsmubaController::class);
-Route::resource('admin/unit-kerja/bursa-kerja-khusus', BkkController::class);
 Route::resource('admin/unit-kerja/teaching-factory', TeachingFactoryController::class);
 
 // Baris ini akan menciptakan rute jurusan.index, jurusan.create, dsb.
@@ -203,23 +201,123 @@ Route::get('/admin/profil/sambutan', [SambutanController::class, 'index'])->name
 
 
 Route::prefix('admin')->name('admin.')->group(function () {
-    
+
     // Route untuk Sambutan
     Route::get('/profil/sambutan', [SambutanController::class, 'index'])->name('profil.sambutan.index');
 
     // Route untuk Jurusan (Error yang baru muncul)
     Route::get('/jurusan', [JurusanController::class, 'index'])->name('jurusan.index');
     Route::get('/jalur-pendaftaran', [App\Http\Controllers\SpmbController::class, 'adminIndex'])->name('jalur-pendaftaran.index');
-
 });
 
 use App\Http\Controllers\Admin\JalurPendaftaranController;
 use App\Http\Controllers\SpmbController;
+use App\Http\Controllers\Admin\GuruController;
 
 
-Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
-});
+Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {});
 
 Route::get('/spmb/spmb-2026', [SpmbController::class, 'index'])->name('spmb-2026');
 
 Route::get('/spmb/spmb-2026/pendaftaran', [PendaftaranController::class, 'index']);
+
+// Pastikan ada bagian ->name(...) ini
+Route::get('/pendaftaran', function () {
+    return view('spmb.pendaftaran');
+})->name('pendaftaran.index');
+
+Route::get('/pendaftaran', function () {
+    return view('spmb.pendaftaran');
+});
+
+
+
+
+
+// ... import controller lainnya
+
+Route::prefix('admin')->group(function () {
+
+    // Pastikan ada ->name('admin.dashboard') di sini
+    // Tambahkan ->name('admin.dashboard') di akhir route dashboard kamu
+    Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+
+    // Untuk menu-menu lainnya, gunakan resource atau name yang sesuai
+
+    Route::resource('identitas-sekolah', IdentitasController::class)->names('identitas-sekolah');
+    Route::resource('visi-misi', VisiMisiController::class)->names('visi-misi');
+    Route::resource('sejarah-singkat', SejarahController::class)->names('sejarah-singkat');
+
+    // Bagian Unit Kerja
+    Route::resource('kurikulum', KurikulumController::class)->names('kurikulum');
+    Route::resource('kesiswaan', KesiswaanController::class)->names('kesiswaan');
+    Route::resource('sarpras', SarprasController::class)->names('sarpras');
+    Route::resource('ismuba', IsmubaController::class)->names('ismuba');
+
+    // Untuk Guru & Staf (sesuai sidebar kamu)
+    Route::resource('guru', GuruController::class)->names([
+        'index' => 'admin.guru.index',
+        'destroy' => 'admin.guru.destroy'
+    ]);
+
+    // Menu Bawah
+    Route::resource('agenda', AgendaController::class)->names('agenda');
+    Route::resource('informasi', InformasiController::class)->names('informasi');
+    Route::resource('kontak', KontakController::class)->names('kontak');
+});
+
+Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
+    // Dashboard (Fix error image_43a795)
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Profil Sekolah (Fix error image_50713a)
+    Route::resource('profil-sekolah', ProfilController::class);
+    Route::resource('identitas-sekolah', IdentitasController::class);
+    Route::resource('visi-misi', VisiMisiController::class);
+    Route::resource('guru', GuruController::class);
+});
+
+Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
+    
+    // Sesuaikan nama ini agar sidebar bisa memanggil 'admin.profil.sambutan.index'
+    Route::resource('profil/sambutan', SambutanController::class)->names([
+        'index' => 'profil.sambutan.index',
+        'store' => 'profil.sambutan.store',
+        'update' => 'profil.sambutan.update',
+    ]);
+
+});
+
+use App\Http\Controllers\Admin\PendaftaranController as AdminPendaftaran;
+
+// Gunakan nama ini supaya sidebar kamu tidak error
+Route::get('/admin/jalur-pendaftaran', [AdminPendaftaran::class, 'index'])->name('admin.jalur-pendaftaran.index');
+
+// Tambahkan juga route hapusnya agar tidak error RouteNotFound lagi nanti
+Route::delete('/admin/jalur-pendaftaran/{id}', [AdminPendaftaran::class, 'destroy'])->name('admin.pendaftaran.destroy');
+
+
+// Route untuk PENGUNJUNG (Frontend)
+Route::get('/wakasek-humas', [HumasController::class, 'index'])->name('wakasek-humas');
+
+// Route untuk ADMIN (Backend) - Taruh di dalam group Admin
+Route::prefix('admin')->group(function () {
+    Route::get('/humas', [HumasController::class, 'admin_index'])->name('humas.index');
+});
+
+// Route Frontend (Untuk Navbar)
+Route::get('/unit-kerja/Bursa-Kerja-Khusus', [App\Http\Controllers\Admin\BkkController::class, 'index'])->name('Bursa-Kerja-Khusus');
+
+// Route Admin (Di dalam prefix admin)
+Route::prefix('admin')->group(function () {
+    Route::get('/bkk', [App\Http\Controllers\Admin\BkkController::class, 'adminIndex'])->name('bkk.index');
+});
+
+Route::prefix('admin')->group(function () {
+    // Gunakan fungsi 'admin_index' khusus untuk dashboard
+    Route::get('/teaching-factory', [TeachingFactoryController::class, 'admin_index'])->name('tefa.index');
+    // ... rute admin lainnya
+});
+
+// 2. BARU TARUH FRONTEND DI BAWAHNYA
+Route::get('/unit-kerja/Teaching-Factory', [TeachingFactoryController::class, 'index'])->name('Teaching-Factory');

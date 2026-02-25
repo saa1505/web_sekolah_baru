@@ -1,3 +1,8 @@
+@php
+    if(!isset($mitras)) {
+        $mitras = \App\Models\Humas::all();
+    }
+@endphp
 @extends('main.index')
 
 @section('css')

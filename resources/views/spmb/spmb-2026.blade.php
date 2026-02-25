@@ -35,7 +35,7 @@
 
                             <div>
                                 @if ($jalur->is_open)
-                                    <a href="#" class="btn-spmb-custom"
+                                    <a href="/pendaftaran" class="btn-spmb-custom"
                                         style="border-radius: 5px; background-color: #198754;">DAFTAR SEKARANG</a>
                                 @else
                                     <button class="btn btn-light w-100 text-muted fw-bold py-2" disabled

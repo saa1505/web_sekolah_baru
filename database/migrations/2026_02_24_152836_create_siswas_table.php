@@ -13,8 +13,6 @@ return new class extends Migration
     {
         Schema::create('siswas', function (Blueprint $table) {
             $table->id();
-            $table->string('nama');
-            $table->foreignId('jurusan_id')->constrained('jurusans');
             $table->timestamps();
         });
     }
@@ -24,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('spmb_settings');
+        Schema::dropIfExists('siswas');
     }
 };

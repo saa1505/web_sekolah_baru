@@ -41,7 +41,7 @@
                                 Assalamu’alaikum warahmatullahi wabarakatuh...
                             </td>
                             <td>
-                                <a href="{{ route('frontend.sambutan') }}"
+                                <a href="/sambutan-kepala-sekolahc"
                                    target="_blank"
                                    class="btn btn-info btn-sm">
                                     Lihat
